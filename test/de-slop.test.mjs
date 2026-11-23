@@ -6,6 +6,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { analyzeSlop, runFixtureBenchmark } from "../src/analyzer.mjs";
+import { detectFileSlop } from "../src/rules.mjs";
 import { generateSlopBadge } from "../src/badge.mjs";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -35,7 +36,6 @@ test("git diff mode analyzes only added lines and --max-score enforces CI gate",
     git(["config", "user.name", "Tester"]);
     git(["config", "user.email", "tester@example.com"]);
 
-    // Legacy file with old `any` that is NOT touched in diff
     const filePath = path.join(tmpDir, "app.ts");
     fs.writeFileSync(
       filePath,
@@ -44,7 +44,6 @@ test("git diff mode analyzes only added lines and --max-score enforces CI gate",
     git(["add", "."]);
     git(["commit", "-m", "base"]);
 
-    // Add clean line only
     fs.writeFileSync(
       filePath,
       "export function legacy(x: any) {\n  return x;\n}\nexport function ok(n: number) {\n  return n + 2;\n}\n"
@@ -52,7 +51,6 @@ test("git diff mode analyzes only added lines and --max-score enforces CI gate",
     const cleanDiff = analyzeSlop({ targetPath: tmpDir, diff: true });
     assert.equal(cleanDiff.slopScore, 0);
 
-    // Add sloppy lines
     fs.writeFileSync(
       filePath,
       "export function legacy(x: any) {\n  return x;\n}\nexport function ok(n: number) {\n  const flag = n > 0 ? true : false;\n  return flag;\n}\n"
@@ -60,7 +58,6 @@ test("git diff mode analyzes only added lines and --max-score enforces CI gate",
     const dirtyDiff = analyzeSlop({ targetPath: tmpDir, diff: true });
     assert.ok(dirtyDiff.totalFindings >= 1);
     assert.equal(dirtyDiff.byRule["boolean-ternary-noise"], 1);
-    // Unchanged line 1 (`x: any`) was NOT flagged in diff mode
     assert.equal(dirtyDiff.byRule["any-escape-hatch"], undefined);
 
     const gate = spawnSync(process.execPath, [BIN_PATH, "check", path.join(REPO_ROOT, "fixtures", "sloppy-pr.ts"), "--max-score", "20"], {
@@ -71,6 +68,50 @@ test("git diff mode analyzes only added lines and --max-score enforces CI gate",
     const svg = generateSlopBadge({ score: 0, grade: "A" });
     assert.match(svg, /^<svg /);
     assert.match(svg, /A \(0\/100\)/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+  }
+});
+
+test("v1.1.0 catch exemptions, inline suppression, new Go/Python/TS/async rules, and --exclude work", () => {
+  const cleanCatchCode = [
+    "try {",
+    "  JSON.parse(line);",
+    "} catch {",
+    "  // Ignore stray non-JSON stdout lines from external child servers",
+    "}"
+  ].join("\n");
+  assert.equal(detectFileSlop("src/pool.mjs", cleanCatchCode).length, 0);
+
+  const bareCatchCode = "try {\n  run();\n} catch {\n}\ntry {\n  run();\n} catch (e) {\n  // ignore\n}\n";
+  const catchHits = detectFileSlop("src/pool.mjs", bareCatchCode).filter((f) => f.ruleId === "empty-or-swallowed-catch");
+  assert.equal(catchHits.length, 2);
+
+  const suppressed = "// de-slop-ignore\nconst x: any = 1;\n";
+  assert.equal(detectFileSlop("src/ok.ts", suppressed).length, 0);
+
+  const tsHits = detectFileSlop(
+    "src/mod.ts",
+    "// @ts-ignore\nexport async function ping() {\n  return 1;\n}\n"
+  );
+  assert.ok(tsHits.some((f) => f.ruleId === "ts-ignore-without-reason"));
+  assert.ok(tsHits.some((f) => f.ruleId === "async-without-await"));
+
+  const pyHits = detectFileSlop("app.py", "try:\n  work()\nexcept:\n  log()\n");
+  assert.ok(pyHits.some((f) => f.ruleId === "python-bare-except"));
+
+  const goHits = detectFileSlop("main.go", "func f() error {\n  if err != nil {\n    return nil\n  }\n  return nil\n}\n");
+  assert.ok(goHits.some((f) => f.ruleId === "go-swallowed-error"));
+
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "de-slop-excl-"));
+  try {
+    fs.mkdirSync(path.join(tmpDir, "generated"), { recursive: true });
+    fs.writeFileSync(path.join(tmpDir, "generated", "gen.ts"), "export const x: any = 1;\n");
+    fs.writeFileSync(path.join(tmpDir, "clean.ts"), "export const y: number = 1;\n");
+
+    const rep = analyzeSlop({ targetPath: tmpDir, exclude: ["generated/"] });
+    assert.equal(rep.filesChecked, 1);
+    assert.equal(rep.slopScore, 0);
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
   }

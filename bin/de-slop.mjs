@@ -69,11 +69,15 @@ function main() {
 
   if (cmd === "check") {
     const targetPath = positional[0] || ".";
+    const exclude = typeof flags.exclude === "string"
+      ? flags.exclude.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
     const rep = analyzeSlop({
       targetPath,
       diff: Boolean(flags.diff),
       staged: Boolean(flags.staged),
-      baseRef: typeof flags.base === "string" ? flags.base : undefined
+      baseRef: typeof flags.base === "string" ? flags.base : undefined,
+      exclude
     });
 
     if (typeof flags.badge === "string") {
@@ -91,10 +95,10 @@ function main() {
     return;
   }
 
-  console.log(`de-slop v1.0.0
+  console.log(`de-slop v1.1.0
 
 Commands:
-  de-slop check [path] [--diff|--staged|--base ref] [--max-score N] [--badge out.svg] [--format text|json|markdown]
+  de-slop check [path] [--diff|--staged|--base ref] [--exclude a,b] [--max-score N] [--badge out.svg] [--format text|json|markdown]
   de-slop benchmark [--markdown|--json]
   de-slop doctor
 `);

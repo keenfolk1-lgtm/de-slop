@@ -45,24 +45,30 @@ node ./bin/de-slop.mjs benchmark --markdown
 | `fixtures/sloppy-pr.ts` | 100/100 | F | 14 |
 | `fixtures/clean-pr.ts` | 0/100 | A | 0 |
 
-## Detection rules (14 calibrated checks)
+## Detection rules (18 calibrated checks)
 
 | Rule ID | Weight | What it flags |
 | --- | ---: | --- |
-| `empty-or-swallowed-catch` | +14 | Empty `catch {}` or `except: pass` blocks. |
+| `empty-or-swallowed-catch` | +14 | Empty `catch {}`, `catch { // ignore }`, or `except: pass` (exempts blocks with substantive explanatory comments). |
 | `tautological-test` | +18 | Assertions comparing constants (`expect(true).toBe(true)`). |
 | `apologetic-todo-slop` | +15 | Placeholder TODOs ("simplified for brevity", "in a real application"). |
+| `python-bare-except` | +12 | Python bare `except:` catching system-exit exceptions. |
+| `go-swallowed-error` | +12 | Go `if err != nil { return nil }` or empty error check block. |
+| `ts-ignore-without-reason` | +10 | `@ts-ignore` or `@ts-nocheck` without an explanatory reason. |
 | `high-comment-ratio` | +10 | Files where comments exceed 45% of non-empty lines. |
 | `any-escape-hatch` | +9 | TypeScript `: any`, `as any`, or `<any>`. |
+| `async-without-await` | +8 | Short `async function` containing zero `await` keywords. |
 | `trivial-passthrough-wrapper` | +8 | Single-line function forwarding arguments unchanged to another function. |
 | `ai-prose-in-code` | +8 | Stock phrasing inside code comments (`"here we define..."`). |
-| `comment-restates-code` | +7 | Comments sharing >=65% of their tokens with the very next statement. |
+| `comment-restates-code` | +7 | Comments sharing >=65% of their tokens with the very next statement (skips pragmas and why-comments). |
 | `boolean-ternary-noise` | +7 | `? true : false` or `? false : true`. |
 | `redundant-null-fallback` | +7 | Double nullish ternary instead of `??`. |
 | `redundant-else-after-return` | +6 | `} else {` right after `return` or `throw`. |
-| `console-debug-leftover` | +6 | `console.log`, `console.debug`, `dbg!(`, `print("DEBUG")`. |
+| `console-debug-leftover` | +6 | `console.debug(`, debug `console.log("DEBUG"...)`, `dbg!(`, `print("DEBUG")` outside `bin/`/`scripts/`. |
 | `narrating-docstring` | +6 | `@param userId The userId.` repeating the identifier name. |
 | `banner-divider-noise` | +5 | `// ================` divider lines. |
+
+Use `--exclude path1,path2` or a `.deslopignore` file to skip generated files, and `de-slop-ignore` comments for intentional exceptions.
 
 ## Limitations
 

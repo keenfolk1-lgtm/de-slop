@@ -1,7 +1,7 @@
 {
   "name": "de-slop",
   "displayName": "De-Slop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Deterministic AI-slop code purifier (0-100 score) and PR diff cleanup skill.",
   "logo": "assets/logo.svg",
   "author": "keenfolk1-lgtm",

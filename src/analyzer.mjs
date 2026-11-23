@@ -11,7 +11,25 @@ function normalizePath(p) {
   return String(p || "").replace(/\\/g, "/");
 }
 
-function collectFiles(targetPath) {
+function loadExcludes(rootDir, extraExcludes = []) {
+  const patterns = [...extraExcludes];
+  const ignoreFile = path.join(rootDir, ".deslopignore");
+  if (fs.existsSync(ignoreFile)) {
+    for (const raw of fs.readFileSync(ignoreFile, "utf8").split(/\r?\n/)) {
+      const line = raw.trim();
+      if (line && !line.startsWith("#")) patterns.push(line);
+    }
+  }
+  return patterns.map((p) => p.replace(/\\/g, "/").replace(/\/+$/, "").toLowerCase()).filter(Boolean);
+}
+
+function isExcluded(relPath, excludeList) {
+  if (excludeList.length === 0) return false;
+  const norm = normalizePath(relPath).toLowerCase();
+  return excludeList.some((pat) => norm === pat || norm.includes(pat));
+}
+
+function collectFiles(targetPath, excludeList) {
   const abs = path.resolve(targetPath);
   if (!fs.existsSync(abs)) throw new Error(`Target not found: ${targetPath}`);
   const st = fs.statSync(abs);
@@ -22,11 +40,14 @@ function collectFiles(targetPath) {
   const files = [];
   function walk(dir) {
     for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, ent.name);
+      const rel = normalizePath(path.relative(abs, full));
       if (ent.isDirectory()) {
         if (SKIP_DIRS.has(ent.name)) continue;
-        walk(path.join(dir, ent.name));
+        if (isExcluded(rel, excludeList)) continue;
+        walk(full);
       } else if (ent.isFile() && CODE_EXTS.has(path.extname(ent.name).toLowerCase())) {
-        files.push(normalizePath(path.relative(abs, path.join(dir, ent.name))));
+        if (!isExcluded(rel, excludeList)) files.push(rel);
       }
     }
   }
@@ -43,8 +64,11 @@ export function gradeForScore(score) {
   return "F";
 }
 
-export function analyzeSlop({ targetPath = ".", diff = false, staged = false, baseRef } = {}) {
+export function analyzeSlop({ targetPath = ".", diff = false, staged = false, baseRef, exclude = [] } = {}) {
   const absRoot = path.resolve(targetPath);
+  const excludeBase = fs.existsSync(absRoot) && fs.statSync(absRoot).isDirectory() ? absRoot : path.dirname(absRoot);
+  const excludeList = loadExcludes(excludeBase, exclude);
+
   let findings = [];
   let filesChecked = 0;
   let inspectedLines = 0;
@@ -53,6 +77,7 @@ export function analyzeSlop({ targetPath = ".", diff = false, staged = false, ba
     const diffMap = getGitDiffMap(absRoot, { staged, baseRef });
     for (const [rel, addedLines] of diffMap.entries()) {
       if (!CODE_EXTS.has(path.extname(rel).toLowerCase())) continue;
+      if (isExcluded(rel, excludeList)) continue;
       const full = path.join(absRoot, rel);
       if (!fs.existsSync(full)) continue;
       filesChecked++;
@@ -61,7 +86,7 @@ export function analyzeSlop({ targetPath = ".", diff = false, staged = false, ba
       findings.push(...detectFileSlop(rel, content, addedLines));
     }
   } else {
-    const { rootDir, files } = collectFiles(targetPath);
+    const { rootDir, files } = collectFiles(targetPath, excludeList);
     for (const rel of files) {
       const full = path.join(rootDir, rel);
       const content = fs.readFileSync(full, "utf8");
@@ -113,6 +138,7 @@ export function formatTextReport(rep) {
   lines.push("");
   for (const f of rep.findings) {
     lines.push(`[+${f.weight}] ${f.ruleId} ${f.file}:${f.line} - ${f.message}`);
+    if (f.suggestion) lines.push(`  fix: ${f.suggestion}`);
     if (f.snippet) lines.push(`  ${f.snippet}`);
   }
   return lines.join("\n");
@@ -128,10 +154,10 @@ export function formatMarkdownReport(rep) {
     lines.push("No AI-slop patterns found.");
     return lines.join("\n");
   }
-  lines.push("| Rule | Location | Weight | Issue |");
-  lines.push("| --- | --- | ---: | --- |");
+  lines.push("| Rule | Location | Weight | Issue | Fix |");
+  lines.push("| --- | --- | ---: | --- | --- |");
   for (const f of rep.findings) {
-    lines.push(`| \`${f.ruleId}\` | \`${f.file}:${f.line}\` | +${f.weight} | ${f.message} |`);
+    lines.push(`| \`${f.ruleId}\` | \`${f.file}:${f.line}\` | +${f.weight} | ${f.message} | ${f.suggestion || ""} |`);
   }
   return lines.join("\n");
 }
