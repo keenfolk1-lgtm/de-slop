@@ -1,0 +1,12 @@
+{
+  "name": "de-slop",
+  "displayName": "De-Slop",
+  "version": "1.0.0",
+  "description": "Deterministic AI-slop code purifier (0-100 score) and PR diff cleanup skill.",
+  "logo": "assets/logo.svg",
+  "author": "keenfolk1-lgtm",
+  "suggestedPrompts": [
+    "Run de-slop on my current git diff and clean up flagged AI slop without altering behavior",
+    "Check this module with de-slop and report the slop score before opening a pull request"
+  ]
+}

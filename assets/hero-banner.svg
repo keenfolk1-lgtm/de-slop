@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="280" viewBox="0 0 960 280" fill="none">
+  <defs>
+    <radialGradient id="topWash" cx="50%" cy="0%" r="85%" fx="50%" fy="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.92"/>
+      <stop offset="100%" stop-color="#F2F2F7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="aura" cx="84%" cy="12%" r="48%">
+      <stop offset="0%" stop-color="#248A3D" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#248A3D" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#000000" flood-opacity="0.055"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="280" rx="20" fill="#F2F2F7"/>
+  <rect width="960" height="280" rx="20" fill="url(#topWash)"/>
+  <rect width="960" height="280" rx="20" fill="url(#aura)"/>
+  <rect x="0.5" y="0.5" width="959" height="279" rx="19.5" stroke="#000000" stroke-opacity="0.08"/>
+
+  <!-- Left column -->
+  <rect x="48" y="42" width="48" height="48" rx="13" fill="#FFFFFF" stroke="#000000" stroke-opacity="0.08" filter="url(#cardShadow)"/>
+  <path d="M66 60L60 66L66 72" stroke="#1D1D1F" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M78 60L84 66L78 72" stroke="#1D1D1F" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="70" y1="74" x2="74" y2="58" stroke="#1D1D1F" stroke-width="2.1" stroke-linecap="round"/>
+  <circle cx="82" cy="56" r="2.2" fill="#248A3D"/>
+
+  <text x="48" y="136" fill="#1D1D1F" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Inter,system-ui,sans-serif" font-size="34" font-weight="700" letter-spacing="-1">de-slop</text>
+  <text x="48" y="164" fill="#6E6E73" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Inter,system-ui,sans-serif" font-size="15">Deterministic 0-100 AI slop score for git diffs</text>
+  <text x="48" y="185" fill="#6E6E73" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Inter,system-ui,sans-serif" font-size="15">plus a surgical PR cleanup skill.</text>
+
+  <rect x="48" y="208" width="248" height="34" rx="10" fill="#E6E6EC"/>
+  <text x="62" y="230" font-family="'Cascadia Mono','SFMono-Regular',Consolas,monospace" font-size="13" fill="#6E6E73">$ <tspan fill="#1D1D1F">npx de-slop check --diff</tspan></text>
+
+  <!-- Right card -->
+  <rect x="488" y="36" width="424" height="208" rx="16" fill="#FFFFFF" stroke="#000000" stroke-opacity="0.08" filter="url(#cardShadow)"/>
+
+  <text x="512" y="68" fill="#6E6E73" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif" font-size="13">sloppy-pr.ts</text>
+  <text x="812" y="68" text-anchor="end" fill="#1D1D1F" font-family="'Cascadia Mono','SFMono-Regular',Consolas,monospace" font-size="13" font-weight="600">100 / 100 · 14 hits</text>
+  <rect x="824" y="52" width="64" height="22" rx="11" fill="#FCE6E8"/>
+  <text x="856" y="67" text-anchor="middle" fill="#D70015" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif" font-size="12" font-weight="600">Grade F</text>
+  <line x1="512" y1="88" x2="888" y2="88" stroke="#000000" stroke-opacity="0.06"/>
+
+  <text x="512" y="114" fill="#1D1D1F" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif" font-size="13" font-weight="600">clean-pr.ts</text>
+  <text x="812" y="114" text-anchor="end" fill="#248A3D" font-family="'Cascadia Mono','SFMono-Regular',Consolas,monospace" font-size="13" font-weight="600">0 / 100 · 0 hits</text>
+  <rect x="824" y="98" width="64" height="22" rx="11" fill="#E7F4EB"/>
+  <text x="856" y="113" text-anchor="middle" fill="#248A3D" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif" font-size="12" font-weight="600">Grade A</text>
+  <line x1="512" y1="138" x2="888" y2="138" stroke="#000000" stroke-opacity="0.06"/>
+
+  <text x="512" y="168" fill="#6E6E73" font-family="'Cascadia Mono','SFMono-Regular',Consolas,monospace" font-size="12">empty-or-swallowed-catch · any-escape-hatch</text>
+  <text x="512" y="190" fill="#6E6E73" font-family="'Cascadia Mono','SFMono-Regular',Consolas,monospace" font-size="12">apologetic-todo-slop · tautological-test</text>
+  <text x="512" y="216" fill="#1D1D1F" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif" font-size="13">14 calibrated rules across TS, JS, Python, Go, Rust</text>
+</svg>

@@ -1,0 +1,53 @@
+{
+  "name": "de-slop",
+  "version": "1.0.0",
+  "description": "Anti-AI-slop code purifier: deterministic 0-100 slop-score analyzer for git diffs and files, CI gate, SVG badge exporter, and cleanup SKILL.md.",
+  "type": "module",
+  "license": "MIT",
+  "author": "keenfolk1-lgtm",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/keenfolk1-lgtm/de-slop.git"
+  },
+  "homepage": "https://github.com/keenfolk1-lgtm/de-slop#readme",
+  "bugs": {
+    "url": "https://github.com/keenfolk1-lgtm/de-slop/issues"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "bin": {
+    "de-slop": "./bin/de-slop.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "fixtures/",
+    "skills/",
+    "assets/",
+    "plugin.json",
+    "README.md",
+    "README.ru.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test ./test/*.test.mjs",
+    "benchmark": "node ./bin/de-slop.mjs benchmark --markdown",
+    "doctor": "node ./bin/de-slop.mjs doctor"
+  },
+  "keywords": [
+    "agent-skills",
+    "code-quality",
+    "ai-slop",
+    "pr-review",
+    "static-analysis",
+    "claude-code",
+    "cursor",
+    "antigravity",
+    "codex"
+  ],
+  "dependencies": {}
+}
